@@ -7,15 +7,31 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+// Parse the FIREBASE_KEY env variable (stringified JSON)
+const serviceAccountString = process.env.FIREBASE_KEY;
 
-// Fix the private_key field
-serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+if (!serviceAccountString) {
+  throw new Error("FIREBASE_KEY environment variable not set");
+}
 
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(serviceAccountString);
+} catch (e) {
+  throw new Error("FIREBASE_KEY is not valid JSON");
+}
+
+// Replace escaped newlines in the private key
+if (serviceAccount.private_key) {
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+} else {
+  throw new Error("private_key not found in FIREBASE_KEY");
+}
+
+// Initialize Firebase
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
 const db = admin.firestore();
 
 app.post('/signup', async (req, res) => {
