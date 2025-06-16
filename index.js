@@ -7,9 +7,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+
+// Fix the private_key field
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
 admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_KEY)),
+  credential: admin.credential.cert(serviceAccount),
 });
+
 const db = admin.firestore();
 
 app.post('/signup', async (req, res) => {
