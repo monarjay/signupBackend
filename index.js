@@ -8,9 +8,8 @@ app.use(cors());
 app.use(express.json());
 
 admin.initializeApp({
-  credential: admin.credential.cert(require('./firebase-key.json')),
+  credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_KEY)),
 });
-
 const db = admin.firestore();
 
 app.post('/signup', async (req, res) => {
